@@ -1,0 +1,36 @@
+# VSCode
+.vscode
+
+# Python
+__pycache__
+
+# Build outputs
+/build/
+/dist/
+/.next/
+/out/
+
+# Testing artifacts
+/coverage/
+
+# Environment variables
+.venv
+.venv.*
+.env
+.env.*
+
+# Large data files
+*.csv
+*.xlsx
+*.sqlite
+*.parquet
+
+# Generated/minified code
+*.min.js
+*.map
+
+# Extras
+.gitignore
+.python-version
+pyproject.toml
+uv.lock

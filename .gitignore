@@ -1,0 +1,33 @@
+# Python-generated files
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Cline
+.clinerules
+memory-bank/
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+.next/
+
+# Data
+data/raw/
+data/processed/
+data/parquet/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
