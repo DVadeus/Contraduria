@@ -34,3 +34,6 @@ data/parquet/
 # OS
 .DS_Store
 Thumbs.db
+
+# Environment
+.env
