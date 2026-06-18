@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contraduría — Prototipo Concepto E</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&family=Quattrocento+Sans:wght@400;700&family=Afacad&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/recharts@2.15.2/umd/Recharts.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  :root {
+    --primary: #00274A;
+    --primary-light: #003D6B;
+    --secondary: #39A9DB;
+    --accent: #EEC139;
+    --bg: #F8F9FF;
+    --surface: #FFFFFF;
+    --muted: #DFE0E5;
+    --text: #05051C;
+    --text-muted: #58585A;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --sidebar-w: 4.5rem;
+    --navbar-h: 3.5rem;
+  }
+  .dark {
+    --primary: #39A9DB;
+    --primary-light: #5BB8E0;
+    --secondary: #00274A;
+    --accent: #EEC139;
+    --bg: #0F1117;
+    --surface: #1A1B26;
+    --muted: #2A2B36;
+    --text: #E8E8ED;
+    --text-muted: #9CA3AF;
+  }
+  * { transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease; }
+  body { font-family: 'Quattrocento Sans', sans-serif; background: var(--bg); color: var(--text); }
+  .font-heading { font-family: 'Libre Baskerville', serif; }
+  .font-logo { font-family: 'Afacad', sans-serif; }
+  .kpi-card { background: var(--surface); border: 1px solid var(--muted); border-radius: 16px; padding: 1.5rem; }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .panel { background: var(--surface); border: 1px solid var(--muted); border-radius: 16px; padding: 1.5rem; }
+  .btn-primary { background: var(--primary); color: #fff; border-radius: 8px; padding: 0.625rem 1.5rem; font-weight: 700; }
+  .btn-primary:hover { background: var(--primary-light); }
+  .btn-outline { background: transparent; border: 1px solid var(--muted); color: var(--text); border-radius: 8px; padding: 0.625rem 1.5rem; font-weight: 700; }
+  .btn-outline:hover { background: var(--muted); }
+  .badge { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.25rem 0.625rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
+  .badge-outline { border: 1px solid var(--text-muted); color: var(--text-muted); }
+  .badge-filled { background: var(--primary); color: #fff; }
+  .badge-success { background: #dcfce7; color: #16a34a; }
+  .badge-warning { background: #fef3c7; color: #d97706; }
+  .badge-danger { background: #fee2e2; color: #dc2626; }
+  .dark .badge-success { background: #16653433; color: #4ade80; }
+  .dark .badge-warning { background: #92400e33; color: #fbbf24; }
+  .dark .badge-danger { background: #991b1b33; color: #f87171; }
+  .nav-link { display: flex; align-items: center; gap: 0.5rem; padding: 0.375rem 0.75rem; border-radius: 8px; color: var(--text-muted); font-size: 0.875rem; }
+  .nav-link:hover, .nav-link.active { background: var(--muted); color: var(--text); }
+  .nav-link.active { font-weight: 700; }
+  .sidebar-btn { width: 3rem; height: 3rem; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: var(--text-muted); }
+  .sidebar-btn:hover { background: var(--muted); }
+  .sidebar-btn.active { background: var(--primary); color: #fff; }
+  .section { display: none; }
+  .section.active { display: block; }
+  .recharts-wrapper { font-family: 'Inter', sans-serif !important; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+
+  /* Hero case card */
+  .case-card {
+    position: relative; border-radius: 24px; overflow: hidden;
+    height: 312px; display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 1.5rem; gap: 1rem;
+  }
+  .case-card::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.9) 100%);
+    z-index: 1;
+  }
+  .case-card > * { position: relative; z-index: 2; }
+
+  @media (max-width: 768px) {
+    :root { --sidebar-w: 0px; }
+    .desktop-only { display: none !important; }
+  }
+  @media (min-width: 769px) {
+    .mobile-only { display: none !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen">
+<div id="app" class="flex min-h-screen">
+  <!-- Sidebar (Desktop) -->
+  <aside class="desktop-only flex flex-col items-center py-6 px-3 gap-6 border-r border-[var(--muted)] bg-[var(--surface)] w-[var(--sidebar-w)] sticky top-0 h-screen">
+    <div class="flex flex-col items-center gap-2">
+      <div class="w-10 h-10 rounded-xl bg-[var(--primary)] flex items-center justify-center">
+        <span class="font-logo text-white text-xs leading-none text-center">GV</span>
+      </div>
+    </div>
+    <nav class="flex flex-col gap-3 flex-1 pt-8">
+      <button class="sidebar-btn active" title="Dashboard" onclick="navigateTo('dashboard')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="sidebar-btn" title="Contratos" onclick="navigateTo('contracts')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </button>
+      <button class="sidebar-btn" title="Entidades" onclick="navigateTo('entities')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+      </button>
+      <button class="sidebar-btn" title="Proveedores" onclick="navigateTo('suppliers')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </button>
+    </nav>
+    <button id="themeToggle" class="sidebar-btn" title="Modo oscuro" onclick="toggleTheme()">
+      <svg id="themeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="flex-1 flex flex-col min-w-0">
+    <!-- Navbar -->
+    <header class="flex items-center justify-between h-[var(--navbar-h)] px-6 border-b border-[var(--muted)] bg-[var(--surface)] sticky top-0 z-50">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-[var(--primary)] flex items-center justify-center">
+            <span class="font-logo text-white text-[9px] leading-none text-center">GV</span>
+          </div>
+          <span class="font-heading text-lg text-[var(--primary)]">Contraduría</span>
+        </div>
+        <nav class="desktop-only flex items-center gap-1 ml-8">
+          <a href="#" class="nav-link active" onclick="navigateTo('dashboard'); return false;">Dashboard</a>
+          <a href="#" class="nav-link" onclick="navigateTo('contracts'); return false;">Contratos</a>
+          <a href="#" class="nav-link" onclick="navigateTo('entities'); return false;">Entidades</a>
+          <a href="#" class="nav-link" onclick="navigateTo('suppliers'); return false;">Proveedores</a>
+        </nav>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="relative">
+          <input type="text" placeholder="Buscar contratos, entidades..." class="desktop-only w-64 px-4 py-1.5 pl-9 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]" onkeydown="if(event.key==='Enter'){navigateTo('contracts');document.querySelector('#contractSearch')?.focus();}">
+          <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] desktop-only" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <kbd class="desktop-only absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] px-1.5 py-0.5 rounded bg-[var(--muted)] text-[var(--text-muted)]">⌘K</kbd>
+        </div>
+        <button class="mobile-only sidebar-btn" onclick="toggleTheme()" style="width:2.5rem;height:2.5rem;">
+          <svg id="themeIconMobile" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Page: Dashboard -->
+    <section id="dashboard" class="section active p-6 flex flex-col gap-8">
+      <!-- Hero -->
+      <div class="grid lg:grid-cols-2 gap-6 items-center">
+        <div class="flex flex-col gap-6">
+          <div class="flex flex-col gap-2">
+            <p class="text-[var(--text-muted)] text-lg italic">"Seamos conscientes de lo que está sucediendo en Colombia."</p>
+            <p class="text-sm text-[var(--text-muted)]"><strong class="text-[var(--primary)]">Contraduría</strong> — Plataforma de transparencia contractual</p>
+          </div>
+          <h1 class="font-heading text-4xl lg:text-5xl text-[var(--primary)] leading-tight">Analiza,<br>Descubre,<br>Indaga</h1>
+          <p class="text-[var(--text-muted)] text-lg">Datos reales y actualizados de contratación pública en Colombia.</p>
+        </div>
+        <div class="case-card" style="background: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect fill=%22%2300274A%22 width=%22400%22 height=%22300%22/><circle cx=%22200%22 cy=%22120%22 r=%2280%22 fill=%22%2339A9DB%22 opacity=%220.6%22/><circle cx=%22300%22 cy=%22220%22 r=%2260%22 fill=%22%23EEC139%22 opacity=%220.4%22/></svg>') center/cover;">
+          <span class="badge badge-filled text-xs w-fit">Destacado</span>
+          <div>
+            <h3 class="font-heading text-white text-xl">Top 10 Contratistas</h3>
+            <p class="text-white/80 text-sm">Ranking de los mayores contratistas por valor adjudicado en el último año</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="kpi-card"><p class="text-[var(--text-muted)] text-sm font-bold">Total Contratado</p><p class="font-heading text-2xl text-[var(--primary)] mt-1">$ 87.3B</p><p class="text-xs text-[var(--success)] mt-1">↑ 12.4% vs año anterior</p></div>
+        <div class="kpi-card"><p class="text-[var(--text-muted)] text-sm font-bold">Contratos Activos</p><p class="font-heading text-2xl text-[var(--primary)] mt-1">12,847</p><p class="text-xs text-[var(--text-muted)] mt-1">En 1,245 entidades</p></div>
+        <div class="kpi-card"><p class="text-[var(--text-muted)] text-sm font-bold">Ejecución Promedio</p><p class="font-heading text-2xl text-[var(--warning)] mt-1">67.3%</p><p class="text-xs text-[var(--text-muted)] mt-1">Valor pagado vs contratado</p></div>
+        <div class="kpi-card"><p class="text-[var(--text-muted)] text-sm font-bold">Proveedores Únicos</p><p class="font-heading text-2xl text-[var(--primary)] mt-1">8,923</p><p class="text-xs text-[var(--text-muted)] mt-1">18% son PyME</p></div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <div class="panel"><h3 class="font-heading text-lg text-[var(--primary)] mb-4">Top Entidades por Valor</h3><div id="chartEntities" style="width:100%;height:300px;"></div></div>
+        <div class="panel"><h3 class="font-heading text-lg text-[var(--primary)] mb-4">Top Proveedores por Valor</h3><div id="chartSuppliers" style="width:100%;height:300px;"></div></div>
+        <div class="panel"><h3 class="font-heading text-lg text-[var(--primary)] mb-4">Modalidades de Contratación</h3><div id="chartModalities" style="width:100%;height:300px;"></div></div>
+        <div class="panel">
+          <h3 class="font-heading text-lg text-[var(--primary)] mb-4">Tendencia Anual</h3>
+          <div id="chartTrend" style="width:100%;height:300px;"></div>
+        </div>
+      </div>
+
+      <!-- Risk Panel -->
+      <div class="panel">
+        <h3 class="font-heading text-lg text-[var(--primary)] mb-4 flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-[var(--danger)]"></span> Alertas de Riesgo
+        </h3>
+        <div class="grid lg:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl border border-[var(--muted)] bg-[var(--bg)]">
+            <p class="text-sm font-bold">Concentración de Contratista</p>
+            <p class="text-[var(--danger)] text-lg font-heading mt-1">Consorcio Metro Bogotá</p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">47 contratos — $3.2B acumulado</p>
+          </div>
+          <div class="p-4 rounded-xl border border-[var(--muted)] bg-[var(--bg)]">
+            <p class="text-sm font-bold">Valor Atípico Detectado</p>
+            <p class="text-[var(--danger)] text-lg font-heading mt-1">$ 11.25B</p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">5× el promedio de contratos del sector transporte</p>
+          </div>
+          <div class="p-4 rounded-xl border border-[var(--muted)] bg-[var(--bg)]">
+            <p class="text-sm font-bold">Sin Ejecución Reportada</p>
+            <p class="text-[var(--warning)] text-lg font-heading mt-1">234 contratos</p>
+            <p class="text-xs text-[var(--text-muted)] mt-1">Sin pagos registrados en más de 12 meses</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Contracts Table -->
+      <div class="panel">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-heading text-lg text-[var(--primary)]">Contratos Recientes</h3>
+          <button class="btn-outline text-sm" onclick="navigateTo('contracts')">Ver todos →</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead><tr class="text-left text-[var(--text-muted)] text-xs">
+              <th class="pb-3">ID Contrato</th><th class="pb-3">Entidad</th><th class="pb-3">Proveedor</th><th class="pb-3">Valor</th><th class="pb-3">Estado</th><th class="pb-3">Modalidad</th>
+            </tr></thead>
+            <tbody class="divide-y divide-[var(--muted)]" id="recentContractsBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page: Contracts -->
+    <section id="contracts" class="section p-6 flex flex-col gap-6">
+      <div class="flex flex-col gap-2">
+        <h2 class="font-heading text-3xl text-[var(--primary)]">Contratos</h2>
+        <p class="text-[var(--text-muted)]">Explora y filtra los contratos públicos de Colombia.</p>
+      </div>
+      <div class="grid lg:grid-cols-[280px_1fr] gap-6">
+        <!-- Filters Sidebar -->
+        <div class="panel flex flex-col gap-6 h-fit sticky top-[calc(var(--navbar-h)+1.5rem)]">
+          <div class="flex items-center justify-between">
+            <h4 class="font-bold text-sm">Filtros</h4>
+            <button class="text-xs text-[var(--text-muted)] hover:text-[var(--text)]" onclick="resetFilters()">Reiniciar</button>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[var(--text-muted)]">Año</label>
+            <select class="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" id="filterYear">
+              <option value="">Todos</option><option>2025</option><option>2024</option><option>2023</option><option>2022</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[var(--text-muted)]">Entidad</label>
+            <input type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" placeholder="Nombre o NIT" id="filterEntity">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[var(--text-muted)]">Proveedor</label>
+            <input type="text" class="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" placeholder="Nombre o documento" id="filterSupplier">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[var(--text-muted)]">Modalidad</label>
+            <select class="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" id="filterModality">
+              <option value="">Todas</option><option>Licitación Pública</option><option>Contratación Directa</option><option>Selección Abreviada</option><option>Mínima Cuantía</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold text-[var(--text-muted)]">Rango de Valor (millones)</label>
+            <div class="flex gap-2 mt-1">
+              <input type="number" class="w-full px-3 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" placeholder="Min" id="filterMin">
+              <input type="number" class="w-full px-3 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" placeholder="Max" id="filterMax">
+            </div>
+          </div>
+          <button class="btn-primary w-full text-sm" onclick="applyFilters()">Aplicar filtros</button>
+        </div>
+        <!-- Results -->
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <p class="text-sm text-[var(--text-muted)]" id="resultsCount">Mostrando 50 de 12,847 contratos</p>
+            <input type="text" class="w-64 px-4 py-2 rounded-lg border border-[var(--muted)] bg-[var(--bg)] text-sm" placeholder="Buscar por ID, objeto..." id="contractSearch">
+          </div>
+          <div class="panel overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-[var(--text-muted)] text-xs">
+                <th class="pb-3 cursor-pointer hover:text-[var(--text)]">ID ↕</th>
+                <th class="pb-3">Entidad</th>
+                <th class="pb-3">Proveedor</th>
+                <th class="pb-3">Valor</th>
+                <th class="pb-3">Fecha</th>
+                <th class="pb-3">Estado</th>
+                <th class="pb-3">Modalidad</th>
+              </tr></thead>
+              <tbody class="divide-y divide-[var(--muted)]" id="contractsTableBody"></tbody>
+            </table>
+          </div>
+          <div class="flex items-center justify-center gap-2" id="pagination"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Page: Entities -->
+    <section id="entities" class="section p-6 flex flex-col gap-6">
+      <div class="flex flex-col gap-2">
+        <h2 class="font-heading text-3xl text-[var(--primary)]">Entidades Contratantes</h2>
+        <p class="text-[var(--text-muted)]">Análisis por entidad del Estado colombiano.</p>
+      </div>
+      <div class="grid lg:grid-cols-4 gap-4" id="entitiesKPIs"></div>
+      <div class="panel overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-[var(--text-muted)] text-xs">
+            <th class="pb-3">Entidad</th><th class="pb-3">NIT</th><th class="pb-3">Contratos</th><th class="pb-3">Valor Total</th><th class="pb-3">% Ejecución</th><th class="pb-3">Sector</th>
+          </tr></thead>
+          <tbody class="divide-y divide-[var(--muted)]" id="entitiesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Page: Suppliers -->
+    <section id="suppliers" class="section p-6 flex flex-col gap-6">
+      <div class="flex flex-col gap-2">
+        <h2 class="font-heading text-3xl text-[var(--primary)]">Proveedores</h2>
+        <p class="text-[var(--text-muted)]">Ranking y análisis de contratistas.</p>
+      </div>
+      <div class="grid lg:grid-cols-4 gap-4" id="supplierKPIs"></div>
+      <div class="panel overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead><tr class="text-left text-[var(--text-muted)] text-xs">
+            <th class="pb-3">Proveedor</th><th class="pb-3">Documento</th><th class="pb-3">Contratos</th><th class="pb-3">Valor Total</th><th class="pb-3">Concentración</th>
+          </tr></thead>
+          <tbody class="divide-y divide-[var(--muted)]" id="suppliersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-auto p-6 border-t border-[var(--muted)] flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-[var(--text-muted)]">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded bg-[var(--primary)] flex items-center justify-center">
+          <span class="font-logo text-white text-[7px]">GV</span>
+        </div>
+        <span class="font-heading text-xs">Contraduría</span>
+      </div>
+      <p>© 2026 Contraduría — Datos de SECOP II. Todos los derechos reservados.</p>
+    </footer>
+  </main>
+</div>
+
+<!-- Mobile Bottom Nav -->
+<nav class="mobile-only fixed bottom-0 left-0 right-0 bg-[var(--surface)] border-t border-[var(--muted)] flex justify-around py-2 z-50">
+  <button class="flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg text-[var(--text-muted)] active" onclick="navigateTo('dashboard'); setMobileNav(this)" id="mobileNavDashboard">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    <span class="text-[10px]">Dashboard</span>
+  </button>
+  <button class="flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg text-[var(--text-muted)]" onclick="navigateTo('contracts'); setMobileNav(this)" id="mobileNavContracts">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span class="text-[10px]">Contratos</span>
+  </button>
+  <button class="flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg text-[var(--text-muted)]" onclick="navigateTo('entities'); setMobileNav(this)" id="mobileNavEntities">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+    <span class="text-[10px]">Entidades</span>
+  </button>
+  <button class="flex flex-col items-center gap-0.5 px-4 py-1 rounded-lg text-[var(--text-muted)]" onclick="navigateTo('suppliers'); setMobileNav(this)" id="mobileNavSuppliers">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    <span class="text-[10px]">Proveedores</span>
+  </button>
+</nav>
+
+<script>
+// Mock Data
+const MOCK_CONTRACTS = [
+  { id:'LP-EMB-002-2026', entidad:'Empresa Metro de Bogotá', proveedor:'Consorcio Metro Bogotá 2032', valor:11250000000, fecha:'2026-03-15', estado:'En ejecución', modalidad:'Licitación Pública', nit:'900.123.456', sector:'Transporte', ejecucion:67 },
+  { id:'CD-IDU-045-2025', entidad:'IDU Bogotá', proveedor:'Constructora Infraestructura Global', valor:3200000000, fecha:'2025-08-01', estado:'En ejecución', modalidad:'Contratación Directa', nit:'899.999.001', sector:'Infraestructura', ejecucion:89 },
+  { id:'SA-SEC-112-2026', entidad:'Secretaría de Educación', proveedor:'Alimentos Escolares S.A.', valor:5800000000, fecha:'2026-01-10', estado:'En ejecución', modalidad:'Selección Abreviada', nit:'800.200.300', sector:'Educación', ejecucion:45 },
+  { id:'MC-FON-089-2025', entidad:'Fondo Nacional de Regalías', proveedor:'Ingeniería Metropolitana S.A.', valor:150000000, fecha:'2025-11-20', estado:'Finalizado', modalidad:'Mínima Cuantía', nit:'900.100.200', sector:'Minas y Energía', ejecucion:100 },
+  { id:'LP-MIN-234-2024', entidad:'Ministerio de Transporte', proveedor:'Metro Rail International Group', valor:8750000000, fecha:'2024-06-01', estado:'En ejecución', modalidad:'Licitación Pública', nit:'800.300.400', sector:'Transporte', ejecucion:52 },
+  { id:'CD-SAL-067-2025', entidad:'Secretaría de Salud', proveedor:'Farmacéutica Nacional Ltda', valor:2100000000, fecha:'2025-02-14', estado:'En ejecución', modalidad:'Contratación Directa', nit:'900.400.500', sector:'Salud', ejecucion:78 },
+  { id:'SA-AMB-033-2026', entidad:'Ministerio de Ambiente', proveedor:'EcoSoluciones S.A.S.', valor:420000000, fecha:'2026-04-01', estado:'Suspendido', modalidad:'Selección Abreviada', nit:'800.500.600', sector:'Ambiente', ejecucion:12 },
+  { id:'LP-DEF-178-2024', entidad:'Ministerio de Defensa', proveedor:'Tecnología Militar Corp', valor:6500000000, fecha:'2024-09-01', estado:'Finalizado', modalidad:'Licitación Pública', nit:'800.600.700', sector:'Defensa', ejecucion:100 },
+  { id:'MC-CUL-021-2026', entidad:'Ministerio de Cultura', proveedor:'Arte y Diseño Bogotá', valor:89000000, fecha:'2026-05-10', estado:'En ejecución', modalidad:'Mínima Cuantía', nit:'900.700.800', sector:'Cultura', ejecucion:35 },
+  { id:'SA-TIC-099-2025', entidad:'Mintic', proveedor:'Soluciones Digitales S.A.', valor:1800000000, fecha:'2025-07-01', estado:'En ejecución', modalidad:'Selección Abreviada', nit:'900.800.900', sector:'Tecnología', ejecucion:91 },
+];
+
+const MOCK_ENTITIES = [
+  { name:'Empresa Metro de Bogotá', nit:'900.123.456', contratos:47, valor:32500000000, ejecucion:67, sector:'Transporte' },
+  { name:'IDU Bogotá', nit:'899.999.001', contratos:312, valor:18000000000, ejecucion:78, sector:'Infraestructura' },
+  { name:'Secretaría de Educación', nit:'800.200.300', contratos:1203, valor:9500000000, ejecucion:45, sector:'Educación' },
+  { name:'Ministerio de Defensa', nit:'800.600.700', contratos:89, valor:15000000000, ejecucion:92, sector:'Defensa' },
+  { name:'Ministerio de Transporte', nit:'800.300.400', contratos:234, valor:28000000000, ejecucion:58, sector:'Transporte' },
+  { name:'Secretaría de Salud', nit:'900.400.500', contratos:567, valor:4200000000, ejecucion:82, sector:'Salud' },
+];
+
+const MOCK_SUPPLIERS = [
+  { name:'Consorcio Metro Bogotá 2032', doc:'901.111.222', contratos:47, valor:12000000000, riesgo:'Alto' },
+  { name:'Constructora Infraestructura Global', doc:'900.222.333', contratos:89, valor:8500000000, riesgo:'Medio' },
+  { name:'Ingeniería Metropolitana S.A.', doc:'900.333.444', contratos:156, valor:7200000000, riesgo:'Alto' },
+  { name:'Metro Rail International Group', doc:'900.444.555', contratos:12, valor:9500000000, riesgo:'Bajo' },
+  { name:'Farmacéutica Nacional Ltda', doc:'900.555.666', contratos:234, valor:3100000000, riesgo:'Bajo' },
+  { name:'Tecnología Militar Corp', doc:'900.666.777', contratos:23, valor:6800000000, riesgo:'Medio' },
+];
+
+// Navigation
+function navigateTo(page) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+  window.scrollTo(0, 0);
+  if (page === 'dashboard') renderCharts();
+  if (page === 'contracts') renderContractsTable();
+  if (page === 'entities') renderEntities();
+  if (page === 'suppliers') renderSuppliers();
+}
+
+function setMobileNav(btn) {
+  document.querySelectorAll('.mobile-only button').forEach(b => { b.classList.remove('active'); b.style.color='var(--text-muted)'; });
+  btn.classList.add('active'); btn.style.color='var(--primary)';
+}
+
+// Theme Toggle
+function toggleTheme() {
+  const isDark = document.documentElement.classList.toggle('dark');
+  localStorage.setItem('theme', isDark ? 'dark' : 'light');
+  const icons = document.querySelectorAll('#themeIcon, #themeIconMobile');
+  icons.forEach(icon => {
+    if (isDark) { icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'; }
+    else { icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>'; }
+  });
+  renderCharts();
+}
+if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); setTimeout(() => { toggleTheme(); toggleTheme(); }, 100); }
+
+// Format currency
+function fmtCOP(v) { return new Intl.NumberFormat('es-CO', { style:'currency', currency:'COP', maximumFractionDigits:0 }).format(v); }
+function fmtDate(d) { return new Date(d).toLocaleDateString('es-CO', { year:'numeric', month:'short', day:'numeric' }); }
+
+// Render recent contracts table
+function renderRecentContracts() {
+  const tbody = document.getElementById('recentContractsBody');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK_CONTRACTS.slice(0, 5).map(c => `
+    <tr class="hover:bg-[var(--bg)] cursor-pointer" onclick="alert('Detalle de contrato: ${c.id}\\nEntidad: ${c.entidad}\\nProveedor: ${c.proveedor}\\nValor: ${fmtCOP(c.valor)}\\nEstado: ${c.estado}\\nEjecución: ${c.ejecucion}%')">
+      <td class="py-2.5 text-[var(--primary)] font-medium">${c.id}</td>
+      <td class="py-2.5">${c.entidad}</td>
+      <td class="py-2.5">${c.proveedor}</td>
+      <td class="py-2.5 font-bold">${fmtCOP(c.valor)}</td>
+      <td class="py-2.5"><span class="badge ${c.estado==='En ejecución'?'badge-success':c.estado==='Suspendido'?'badge-warning':'badge-outline'}">${c.estado}</span></td>
+      <td class="py-2.5 text-[var(--text-muted)]">${c.modalidad}</td>
+    </tr>
+  `).join('');
+}
+
+// Render contracts table (full)
+function renderContractsTable() {
+  const tbody = document.getElementById('contractsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK_CONTRACTS.map(c => `
+    <tr class="hover:bg-[var(--bg)] cursor-pointer" onclick="alert('Detalle de contrato: ${c.id}\\nEntidad: ${c.entidad}\\nProveedor: ${c.proveedor}\\nValor: ${fmtCOP(c.valor)}\\nFecha: ${fmtDate(c.fecha)}\\nEstado: ${c.estado}\\nModalidad: ${c.modalidad}\\nEjecución: ${c.ejecucion}%\\nSector: ${c.sector}')">
+      <td class="py-2.5 text-[var(--primary)] font-medium">${c.id}</td>
+      <td class="py-2.5">${c.entidad}</td>
+      <td class="py-2.5">${c.proveedor}</td>
+      <td class="py-2.5 font-bold">${fmtCOP(c.valor)}</td>
+      <td class="py-2.5 text-[var(--text-muted)]">${fmtDate(c.fecha)}</td>
+      <td class="py-2.5"><span class="badge ${c.estado==='En ejecución'?'badge-success':c.estado==='Suspendido'?'badge-warning':'badge-outline'}">${c.estado}</span></td>
+      <td class="py-2.5 text-[var(--text-muted)]">${c.modalidad}</td>
+    </tr>
+  `).join('');
+  const countEl = document.getElementById('resultsCount');
+  if (countEl) countEl.textContent = `Mostrando ${MOCK_CONTRACTS.length} contratos`;
+  const pagEl = document.getElementById('pagination');
+  if (pagEl) pagEl.innerHTML = '<span class="btn-outline text-xs px-3 py-1 rounded">←</span><span class="btn-primary text-xs px-3 py-1 rounded">1</span><span class="btn-outline text-xs px-3 py-1 rounded">→</span>';
+}
+
+// Render entities
+function renderEntities() {
+  const tbody = document.getElementById('entitiesTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK_ENTITIES.map(e => `
+    <tr class="hover:bg-[var(--bg)] cursor-pointer">
+      <td class="py-2.5 font-medium">${e.name}</td>
+      <td class="py-2.5 text-[var(--text-muted)]">${e.nit}</td>
+      <td class="py-2.5">${e.contratos}</td>
+      <td class="py-2.5 font-bold">${fmtCOP(e.valor)}</td>
+      <td class="py-2.5">${e.ejecucion}%</td>
+      <td class="py-2.5 text-[var(--text-muted)]">${e.sector}</td>
+    </tr>
+  `).join('');
+  const kpis = document.getElementById('entitiesKPIs');
+  if (kpis) kpis.innerHTML = [
+    { label:'Total Entidades', value:'1,245' },
+    { label:'Contratos Promedio', value:'10.3' },
+    { label:'Valor Promedio', value:'$ 2.1B' },
+    { label:'Ejecución Promedio', value:'72%' },
+  ].map(k => `<div class="kpi-card"><p class="text-[var(--text-muted)] text-sm font-bold">${k.label}</p><p class="font-heading text-2xl text-[var(--primary)] mt-1">${k.value}</p></div>`).join('');
+}
+
+// Render suppliers
+function renderSuppliers() {
+  const tbody = document.getElementById('suppliersTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = MOCK_SUPPLIERS.map(s => `
+    <tr class="hover:bg-[var(--bg)] cursor-pointer">
+      <td class="py-2.5 font-medium">${s.name}</td>
+      <td class="py-2.5 text-[var(--text-muted)]">${s.doc}</td>
+      <td class="py-2.5">${s.contratos}</td>
+      <td class="py-2.5 font-bold">${fmtCOP(s.valor)}</td>
+      <td class="py-2.5"><span class="badge ${s.riesgo==='Alto'?'badge-danger':s.riesgo==='Medio'?'badge-warning':'badge-success'}">${s.riesgo}</span></td>
+    </tr>
+  `).join('');
+  const kpis = document.getElementById('supplierKPIs');
+  if (kpis) kpis.innerHTML = [
+    { label:'Total Proveedores', value:'8,923' },
+    { label:'Contratos Promedio', value:'1.4' },
+    { label:'Son PyME', value:'18%' },
+    { label:'Concentración Alta', value:'3.2%' },
+  ].map(k => `<div class="kpi-card"><p class="text-[var(--text-muted)] text-sm font-bold">${k.label}</p><p class="font-heading text-2xl text-[var(--primary)] mt-1">${k.value}</p></div>`).join('');
+}
+
+// Filter actions
+function applyFilters() { alert('Filtros aplicados (simulación)\n\nLos filtros enviarían una consulta a:\nGET /contratos?anio=...&entidad=...&proveedor=...&modalidad=...&valor_min=...&valor_max=...'); }
+function resetFilters() {
+  ['filterYear','filterEntity','filterSupplier','filterModality','filterMin','filterMax'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+// Charts
+function renderCharts() {
+  const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } = Recharts;
+  const isDark = document.documentElement.classList.contains('dark');
+  const axisColor = isDark ? '#9CA3AF' : '#58585A';
+  const gridColor = isDark ? '#2A2B36' : '#DFE0E5';
+
+  const entityData = MOCK_ENTITIES.map(e => ({ name: e.name.split(' ').slice(0,2).join(' '), valor: e.valor / 1e9 }));
+
+  const supplierData = MOCK_SUPPLIERS.map(s => ({ name: s.name.split(' ').slice(0,2).join(' '), valor: s.valor / 1e9 }));
+
+  const modalityData = [
+    { name: 'Licitación Pública', value: 45 },
+    { name: 'Contratación Directa', value: 25 },
+    { name: 'Selección Abreviada', value: 20 },
+    { name: 'Mínima Cuantía', value: 10 },
+  ];
+  const COLORS = ['#00274A', '#39A9DB', '#EEC139', '#DFE0E5'];
+
+  const trendData = [
+    { year:'2020', contratado:45, pagado:28 },
+    { year:'2021', contratado:52, pagado:35 },
+    { year:'2022', contratado:48, pagado:40 },
+    { year:'2023', contratado:68, pagado:52 },
+    { year:'2024', contratado:75, pagado:58 },
+    { year:'2025', contratado:87, pagado:59 },
+  ];
+
+  function renderChart(id, chart) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = '';
+    if (typeof ReactDOM !== 'undefined') {
+      const root = ReactDOM.createRoot(el);
+      root.render(chart);
+    }
+  }
+
+  renderChart('chartEntities', React.createElement(ResponsiveContainer, { width:'100%', height:300 },
+    React.createElement(BarChart, { data:entityData, layout:'vertical', margin:{ top:5, right:30, left:40, bottom:5 } },
+      React.createElement(CartesianGrid, { strokeDasharray:'3 3', stroke:gridColor }),
+      React.createElement(XAxis, { type:'number', tick:{ fill:axisColor, fontSize:12 }, unit:'B' }),
+      React.createElement(YAxis, { type:'category', dataKey:'name', tick:{ fill:axisColor, fontSize:11 }, width:80 }),
+      React.createElement(Tooltip, { formatter: v => [`$${v.toFixed(1)}B`, 'Valor'] }),
+      React.createElement(Bar, { dataKey:'valor', fill:'#00274A', radius:[0,8,8,0] })
+    )
+  ));
+
+  renderChart('chartSuppliers', React.createElement(ResponsiveContainer, { width:'100%', height:300 },
+    React.createElement(BarChart, { data:supplierData, layout:'vertical', margin:{ top:5, right:30, left:40, bottom:5 } },
+      React.createElement(CartesianGrid, { strokeDasharray:'3 3', stroke:gridColor }),
+      React.createElement(XAxis, { type:'number', tick:{ fill:axisColor, fontSize:12 }, unit:'B' }),
+      React.createElement(YAxis, { type:'category', dataKey:'name', tick:{ fill:axisColor, fontSize:11 }, width:100 }),
+      React.createElement(Tooltip, { formatter: v => [`$${v.toFixed(1)}B`, 'Valor'] }),
+      React.createElement(Bar, { dataKey:'valor', fill:'#39A9DB', radius:[0,8,8,0] })
+    )
+  ));
+
+  renderChart('chartModalities', React.createElement(ResponsiveContainer, { width:'100%', height:300 },
+    React.createElement(PieChart, {},
+      React.createElement(Pie, { data:modalityData, cx:'50%', cy:'50%', outerRadius:100, innerRadius:50, paddingAngle:4, dataKey:'value', label:({name,pct}) => `${name} ${(pct*100).toFixed(0)}%` },
+        modalityData.map((_, i) => React.createElement(Cell, { key:i, fill:COLORS[i] }))
+      ),
+      React.createElement(Tooltip, {})
+    )
+  ));
+
+  renderChart('chartTrend', React.createElement(ResponsiveContainer, { width:'100%', height:300 },
+    React.createElement(AreaChart, { data:trendData, margin:{ top:5, right:30, left:20, bottom:5 } },
+      React.createElement(CartesianGrid, { strokeDasharray:'3 3', stroke:gridColor }),
+      React.createElement(XAxis, { dataKey:'year', tick:{ fill:axisColor, fontSize:12 } }),
+      React.createElement(YAxis, { tick:{ fill:axisColor, fontSize:12 }, unit:'B' }),
+      React.createElement(Tooltip, { formatter:(v,name) => [`$${v}B`, name === 'contratado' ? 'Contratado' : 'Pagado'] }),
+      React.createElement(Area, { type:'monotone', dataKey:'contratado', stroke:'#00274A', fill:'#00274A', fillOpacity:0.15, strokeWidth:2 }),
+      React.createElement(Area, { type:'monotone', dataKey:'pagado', stroke:'#16a34a', fill:'#16a34a', fillOpacity:0.15, strokeWidth:2 })
+    )
+  ));
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  renderRecentContracts();
+  renderCharts();
+  document.getElementById('mobileNavDashboard').style.color = 'var(--primary)';
+});
+</script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+</body>
+</html>

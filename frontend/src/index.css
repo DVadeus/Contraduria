@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --font-heading: "Libre Baskerville", serif;
+  --font-body: "Quattrocento Sans", sans-serif;
+  --font-logo: "Afacad", sans-serif;
+  --font-sans: "Inter", sans-serif;
+
+  --color-primary: #00274a;
+  --color-primary-light: #003d6b;
+  --color-secondary: #39a9db;
+  --color-accent: #eec139;
+  --color-bg: #f8f9ff;
+  --color-surface: #ffffff;
+  --color-muted: #dfe0e5;
+  --color-text: #05051c;
+  --color-text-muted: #58585a;
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+}
+
+.dark {
+  --color-primary: #39a9db;
+  --color-primary-light: #5bb8e0;
+  --color-secondary: #00274a;
+  --color-accent: #eec139;
+  --color-bg: #0f1117;
+  --color-surface: #1a1b26;
+  --color-muted: #2a2b36;
+  --color-text: #e8e8ed;
+  --color-text-muted: #9ca3af;
+}
+
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-muted);
+  border-radius: 3px;
+}
