@@ -21,7 +21,7 @@ from app.schemas.analytics import (
     RiskResponse,
     TopContractorsResponse,
 )
-from app.schemas.contracts import ErrorResponse
+from app.schemas.common import ErrorResponse
 from app.services.analytics_service import (
     compute_by_locality,
     compute_kpi,

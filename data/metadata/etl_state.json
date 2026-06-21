@@ -1,0 +1,36 @@
+{
+  "last_run_id": "run_20260621_211503",
+  "last_run": "2026-06-21T22:59:18.941717+00:00",
+  "last_watermark": null,
+  "last_silver_record_count": 5643509,
+  "last_gold_record_count": 5643509,
+  "last_processed_years": [
+    0,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "last_extract_records": 5643509,
+  "last_inserted_records": 5643509,
+  "last_updated_records": 0,
+  "last_unchanged_records": 0,
+  "marts": {
+    "status": "success",
+    "duration_seconds": 39.31,
+    "rows_generated": {
+      "mart_entidades": 19257,
+      "mart_proveedores": 3343896,
+      "mart_temporal": 131,
+      "mart_modalidades": 152
+    }
+  }
+}

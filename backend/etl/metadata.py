@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 # Rutas por defecto
 # ---------------------------------------------------------------------------
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 _METADATA_DIR = _PROJECT_ROOT / "data" / "metadata"
 _STATE_FILE = "etl_state.json"
 _HISTORY_FILE = "run_history.jsonl"

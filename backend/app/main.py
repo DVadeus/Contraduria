@@ -17,6 +17,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api import analytics  # Router de analytics (KPIs, top contractors, etc.)
 from app.api.routers import (
     contracts,
     entities,
@@ -69,6 +70,7 @@ register_error_handlers(app)
 
 # Registrar routers
 app.include_router(health.router)
+app.include_router(analytics.router)
 app.include_router(contracts.router)
 app.include_router(entities.router)
 app.include_router(suppliers.router)

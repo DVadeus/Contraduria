@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 # Configuración por defecto
 # ---------------------------------------------------------------------------
 
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _PROCESSED_DIR = _PROJECT_ROOT / "data" / "processed"
 _PARQUET_DIR = _PROJECT_ROOT / "data" / "parquet"
 

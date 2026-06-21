@@ -10,8 +10,8 @@ Soporta FULL LOAD (primera ejecución) e INCREMENTAL (watermark + row_hash upser
 
 Entry point público:
     run_etl() — ejecuta el pipeline completo con detección automática de modo.
+
+Para ejecutar el ETL:
+    python -m etl.orchestrator          # FULL LOAD (primera ejecución)
+    uv run python -m etl.orchestrator   # usando uv
 """
-
-from etl.orchestrator import run_etl
-
-__all__ = ["run_etl"]

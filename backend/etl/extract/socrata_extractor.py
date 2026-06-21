@@ -32,16 +32,16 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_BASE_URL = "https://www.datos.gov.co/resource/jbjy-vk9h.json"
 DEFAULT_LIMIT = 50000  # Máximo permitido por Socrata sin App Token
-DEFAULT_TIMEOUT = 60.0  # segundos
-DEFAULT_MAX_RETRIES = 3
-DEFAULT_RETRY_BACKOFF = 2.0  # segundos base para backoff exponencial
+DEFAULT_TIMEOUT = 120.0  # segundos (aumentado para offsets grandes en Socrata)
+DEFAULT_MAX_RETRIES = 5
+DEFAULT_RETRY_BACKOFF = 5.0  # segundos base para backoff exponencial
 
 # Watermark incremental
 WATERMARK_COLUMN = "ultima_actualizacion"
 LOOKBACK_DAYS = 7
 
 # Directorio raíz del proyecto
-_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 _RAW_DIR = _PROJECT_ROOT / "data" / "raw"
 
 # Token Socrata desde variable de entorno
@@ -191,6 +191,55 @@ def fetch_page(
     ) from last_error
 
 
+def _find_resume_point(run_dir: Path, limit: int) -> tuple[int, int, int]:
+    """Encuentra desde dónde reanudar una extracción interrumpida.
+
+    Lee los archivos existentes en run_dir, determina el offset más alto
+    ya descargado y retorna el siguiente offset a continuar.
+
+    Args:
+        run_dir: Directorio de ejecución existente.
+        limit: Tamaño de página usado en la extracción.
+
+    Returns:
+        Tupla (next_offset, next_page_num, pages_already_downloaded).
+    """
+    existing_files = sorted(run_dir.glob("socrata_page_*.json"))
+    if not existing_files:
+        return 0, 1, 0
+
+    # Extraer el número de página más alto del nombre de archivo
+    # Formato: socrata_page_NNNNNN_offset_XXXXXXXXXX.json
+    max_page = 0
+    max_offset = 0
+    for f in existing_files:
+        name = f.stem
+        # socrata_page_000083_offset_0004100000
+        parts = name.split("_")
+        if len(parts) >= 4:
+            try:
+                page = int(parts[2])
+                off = int(parts[4]) if len(parts) >= 5 else page * limit
+                if page > max_page:
+                    max_page = page
+                    max_offset = off
+            except (ValueError, IndexError):
+                continue
+
+    next_offset = max_offset + limit
+    next_page = max_page + 1
+    pages_done = max_page
+
+    logger.info(
+        "Reanudación detectada: %d páginas ya descargadas. "
+        "Continuando desde offset=%d, página=%d.",
+        pages_done,
+        next_offset,
+        next_page,
+    )
+    return next_offset, next_page, pages_done
+
+
 def extract_dataset(
     base_url: str = DEFAULT_BASE_URL,
     limit: int = DEFAULT_LIMIT,
@@ -201,6 +250,7 @@ def extract_dataset(
     run_id: Optional[str] = None,
     incremental: bool = False,
     watermark: Optional[str] = None,
+    resume: bool = False,
 ) -> tuple[int, Path]:
     """Extrae el dataset SECOP II usando paginación con $limit y $offset.
 
@@ -220,6 +270,8 @@ def extract_dataset(
         run_id: ID de ejecución (default: generado automáticamente).
         incremental: Si es True, activa extracción incremental con $where.
         watermark: Watermark anterior para extracción incremental.
+        resume: Si es True, busca ejecuciones previas fallidas y reanuda desde
+                la última página descargada exitosamente.
 
     Returns:
         Tupla (total_registros_extraídos, directorio_de_ejecución).
@@ -236,6 +288,18 @@ def extract_dataset(
     page_num = 1
     duplicate_pages = 0
     MAX_DUPLICATE_PAGES = 3
+
+    # Reanudar desde ejecución previa fallida si corresponde
+    if resume:
+        offset, page_num, pages_done = _find_resume_point(output_dir, limit)
+        total_extracted = pages_done * limit
+        logger.info(
+            "Modo RESUME activado: %d páginas ya descargadas (%d registros). "
+            "Continuando desde offset=%d.",
+            pages_done,
+            total_extracted,
+            offset,
+        )
 
     # Construir $where para incremental
     where_clause: Optional[str] = None
@@ -265,6 +329,7 @@ def extract_dataset(
             params: dict[str, str | int] = {
                 "$limit": limit,
                 "$offset": offset,
+                "$order": ":id",
             }
             if where_clause:
                 params["$where"] = where_clause

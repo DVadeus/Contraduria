@@ -29,13 +29,13 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # -- Project root --
-    project_root: Path = Path(__file__).resolve().parent.parent.parent.parent.parent
+    project_root: Path = Path(__file__).resolve().parent.parent.parent.parent
 
     # -- DuckDB --
     parquet_dir: str = "data/parquet"
     duckdb_threads: int = 4
     duckdb_memory_limit: str = "4GB"
-    duckdb_read_only: bool = True
+    duckdb_read_only: bool = False
 
     # -- API --
     cors_origins: list[str] = ["*"]

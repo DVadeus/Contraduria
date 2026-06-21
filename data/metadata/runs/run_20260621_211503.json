@@ -1,0 +1,43 @@
+{
+  "run_id": "run_20260621_211503",
+  "started_at": "2026-06-21T21:15:03.430538+00:00",
+  "status": "running",
+  "mode": "FULL LOAD",
+  "phases": {
+    "extract": {
+      "status": "completed",
+      "rows": 5643509,
+      "raw_path": "C:\\Users\\DVadeus\\Documents\\GitHub\\Contraduria\\data\\raw\\run_20260621_211503",
+      "duration_seconds": 4152.4
+    },
+    "transform": {
+      "status": "completed",
+      "rows": 5643509,
+      "inserted": 5643509,
+      "duration_seconds": 1607.26
+    },
+    "load": {
+      "status": "completed",
+      "partitions": {
+        "0": 405949,
+        "2015": 10,
+        "2016": 1341,
+        "2017": 22227,
+        "2018": 142670,
+        "2019": 142442,
+        "2020": 356631,
+        "2021": 560457,
+        "2022": 707756,
+        "2023": 835408,
+        "2024": 881912,
+        "2025": 1016849,
+        "2026": 569857
+      },
+      "total_records": 5643509,
+      "duration_seconds": 454.05
+    },
+    "marts": {
+      "status": "pending"
+    }
+  }
+}
