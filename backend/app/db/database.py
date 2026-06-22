@@ -31,7 +31,7 @@ def create_connection(read_only: bool = True) -> duckdb.DuckDBPyConnection:
     parquet_dir = settings.parquet_dir_absolute
     parquet_files = sorted(parquet_dir.glob("contratos_*.parquet"))
 
-    conn = duckdb.connect(database=":memory:", read_only=read_only)
+    conn = duckdb.connect(database=":memory:")
 
     # Configurar threads y límite de memoria
     conn.execute(f"SET threads = {settings.duckdb_threads}")

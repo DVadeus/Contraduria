@@ -19,7 +19,7 @@ def get_top_contractors(
 
     Args:
         conn: Conexión DuckDB.
-        parquet_glob: Patrón glob para archivos Parquet (ej: 'data/parquet/contratos_*.parquet').
+        parquet_glob: Patrón glob para archivos Parquet.
         limit: Número máximo de contratistas a retornar.
 
     Returns:
@@ -27,12 +27,12 @@ def get_top_contractors(
     """
     query = f"""
         SELECT
-            nombre_del_proveedor AS contratista,
+            proveedor_adjudicado AS contratista,
             COUNT(*) AS total_contratos,
-            SUM(valor_del_contrato) AS valor_total,
-            AVG(valor_del_contrato) AS valor_promedio
+            SUM(valor_contrato) AS valor_total,
+            AVG(valor_contrato) AS valor_promedio
         FROM '{parquet_glob}'
-        GROUP BY nombre_del_proveedor
+        GROUP BY proveedor_adjudicado
         ORDER BY valor_total DESC
         LIMIT ?
     """
@@ -66,7 +66,7 @@ def count_unique_contractors(
         Número de contratistas únicos.
     """
     query = f"""
-        SELECT COUNT(DISTINCT nombre_del_proveedor) AS total
+        SELECT COUNT(DISTINCT proveedor_adjudicado) AS total
         FROM '{parquet_glob}'
     """
     result = conn.execute(query).fetchone()
@@ -89,14 +89,14 @@ def get_by_locality(
     """
     query = f"""
         SELECT
-            localidad,
+            localizacion AS localidad,
             COUNT(*) AS total_contratos,
-            SUM(valor_del_contrato) AS valor_total,
-            COUNT(DISTINCT nombre_del_proveedor) AS contratistas_unicos,
+            SUM(valor_contrato) AS valor_total,
+            COUNT(DISTINCT proveedor_adjudicado) AS contratistas_unicos,
             COUNT(DISTINCT nombre_entidad) AS entidades_unicas
         FROM '{parquet_glob}'
-        WHERE localidad IS NOT NULL
-        GROUP BY localidad
+        WHERE localizacion IS NOT NULL
+        GROUP BY localizacion
         ORDER BY valor_total DESC
     """
     result = conn.execute(query).fetchdf()
@@ -138,26 +138,26 @@ def get_risk_contracts(
     query = f"""
         WITH contractor_stats AS (
             SELECT
-                nombre_del_proveedor,
+                proveedor_adjudicado,
                 COUNT(*) AS total_contratos_contratista,
-                AVG(valor_del_contrato) AS valor_promedio_contratista
+                AVG(valor_contrato) AS valor_promedio_contratista
             FROM '{parquet_glob}'
-            GROUP BY nombre_del_proveedor
+            GROUP BY proveedor_adjudicado
         )
         SELECT
-            c.id_del_proceso,
-            c.nombre_del_proveedor,
+            c.proceso_de_compra,
+            c.proveedor_adjudicado,
             c.nombre_entidad,
-            c.valor_del_contrato,
+            c.valor_contrato,
             cs.total_contratos_contratista,
             cs.valor_promedio_contratista
         FROM '{parquet_glob}' c
         JOIN contractor_stats cs
-            ON c.nombre_del_proveedor = cs.nombre_del_proveedor
+            ON c.proveedor_adjudicado = cs.proveedor_adjudicado
         WHERE
             cs.total_contratos_contratista > ?
-            OR c.valor_del_contrato > cs.valor_promedio_contratista * ?
-        ORDER BY c.valor_del_contrato DESC
+            OR c.valor_contrato > cs.valor_promedio_contratista * ?
+        ORDER BY c.valor_contrato DESC
     """
     result = conn.execute(query, [threshold_contractor, outlier_multiplier]).fetchdf()
 
@@ -174,8 +174,8 @@ def get_risk_contracts(
         avg_val = row["valor_promedio_contratista"]
         if (
             avg_val
-            and row["valor_del_contrato"]
-            and row["valor_del_contrato"] > avg_val * outlier_multiplier
+            and row["valor_contrato"]
+            and row["valor_contrato"] > avg_val * outlier_multiplier
         ):
             indicadores.append("Valor atípico frente al promedio del contratista")
 
@@ -187,11 +187,11 @@ def get_risk_contracts(
 
         contracts.append(
             {
-                "proceso_id": row["id_del_proceso"],
-                "contratista": row["nombre_del_proveedor"],
+                "proceso_id": row["proceso_de_compra"],
+                "contratista": row["proveedor_adjudicado"],
                 "entidad": row["nombre_entidad"],
-                "valor_contrato": Decimal(str(row["valor_del_contrato"]))
-                if row["valor_del_contrato"] is not None
+                "valor_contrato": Decimal(str(row["valor_contrato"]))
+                if row["valor_contrato"] is not None
                 else Decimal("0"),
                 "nivel_riesgo": nivel,
                 "indicadores": indicadores,
@@ -218,11 +218,11 @@ def get_kpi(
     query = f"""
         SELECT
             COUNT(*) AS total_contratos,
-            SUM(valor_del_contrato) AS valor_total,
-            AVG(valor_del_contrato) AS valor_promedio,
-            COUNT(DISTINCT nombre_del_proveedor) AS contratistas_unicos,
+            SUM(valor_contrato) AS valor_total,
+            AVG(valor_contrato) AS valor_promedio,
+            COUNT(DISTINCT proveedor_adjudicado) AS contratistas_unicos,
             COUNT(DISTINCT nombre_entidad) AS entidades_unicas,
-            COUNT(DISTINCT localidad) AS localidades_cubiertas
+            COUNT(DISTINCT localizacion) AS localidades_cubiertas
         FROM '{parquet_glob}'
     """
     result = conn.execute(query).fetchone()

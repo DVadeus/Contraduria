@@ -14,7 +14,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.database.duckdb_connection import get_connection
+from app.db.database import create_connection
 from app.schemas.contracts import (
     ContractResponse,
     ErrorResponse,
@@ -27,7 +27,7 @@ router = APIRouter(prefix="/contracts", tags=["Contracts"])
 # Directorio de datos — configurable vía variable de entorno
 _DATA_DIR = os.getenv(
     "CONTRADURIA_DATA_DIR",
-    str(Path(__file__).resolve().parent.parent.parent.parent.parent / "data"),
+    str(Path(__file__).resolve().parent.parent.parent.parent / "data"),
 )
 
 
@@ -47,7 +47,7 @@ def get_contracts(
 ):
     """Lista contratos con paginación."""
     try:
-        conn = get_connection()
+        conn = create_connection()
         result = list_contracts(conn, _DATA_DIR, offset=offset, limit=limit)
         conn.close()
         return result
@@ -71,7 +71,7 @@ def get_contract_by_id(
 ):
     """Obtiene un contrato por su ID de proceso."""
     try:
-        conn = get_connection()
+        conn = create_connection()
         contract = get_contract(conn, _DATA_DIR, proceso_id)
         conn.close()
 

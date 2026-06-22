@@ -14,7 +14,7 @@ from pathlib import Path
 
 from fastapi import APIRouter, HTTPException, Query
 
-from app.database.duckdb_connection import get_connection
+from app.db.database import create_connection
 from app.schemas.analytics import (
     KPIResponse,
     LocalityResponse,
@@ -34,7 +34,7 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 # Directorio de datos — configurable vía variable de entorno
 _DATA_DIR = os.getenv(
     "CONTRADURIA_DATA_DIR",
-    str(Path(__file__).resolve().parent.parent.parent.parent.parent / "data"),
+    str(Path(__file__).resolve().parent.parent.parent.parent / "data"),
 )
 
 
@@ -51,7 +51,7 @@ _DATA_DIR = os.getenv(
 def get_kpi():
     """Obtiene KPIs principales del dashboard."""
     try:
-        conn = get_connection()
+        conn = create_connection()
         result = compute_kpi(conn, _DATA_DIR)
         conn.close()
         return result
@@ -76,7 +76,7 @@ def get_top_contractors(
 ):
     """Obtiene ranking de contratistas por valor total."""
     try:
-        conn = get_connection()
+        conn = create_connection()
         result = compute_top_contractors(conn, _DATA_DIR, limit=limit)
         conn.close()
         return result
@@ -97,7 +97,7 @@ def get_top_contractors(
 def get_by_locality():
     """Obtiene métricas de contratación por localidad."""
     try:
-        conn = get_connection()
+        conn = create_connection()
         result = compute_by_locality(conn, _DATA_DIR)
         conn.close()
         return result
@@ -128,7 +128,7 @@ def get_risk_contracts(
 ):
     """Identifica contratos con posibles riesgos."""
     try:
-        conn = get_connection()
+        conn = create_connection()
         result = compute_risk_contracts(
             conn,
             _DATA_DIR,
